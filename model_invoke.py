@@ -1,21 +1,14 @@
 import torch
-from diffusers import DiffusionPipeline
+from diffusers import StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline
 
 # load both base & refiner
-base = DiffusionPipeline.from_pretrained(
+base = StableDiffusionXLPipeline.from_pretrained(
     "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, variant="fp16", use_safetensors=True
-)
-# base.to("cuda")
-base.enable_model_cpu_offload()
-refiner = DiffusionPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-xl-refiner-1.0",
-    text_encoder_2=base.text_encoder_2,
-    vae=base.vae,
-    torch_dtype=torch.float16,
-    use_safetensors=True,
-    variant="fp16",
-)
-refiner.to("cuda")
+).to("cuda")
+
+refiner = StableDiffusionXLImg2ImgPipeline.from_single_file(
+    "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16, use_safetensors=True, variant="fp16"
+).to("cuda")
 
 # Define how many steps and what % of steps to be run on each experts (80/20) here
 n_steps = 40
